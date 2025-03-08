@@ -70,7 +70,63 @@ class AIClient:
         prompt = template.format(text=text)
         return self.async_chat(prompt)
 
-    def save_analysis(self, text, analysis, output_dir="results", timestamp=None):
+    def get_search_tasks(self, topic):
+        """为给定话题生成搜索任务
+        
+        Args:
+            topic (str): 要分析的话题
+            
+        Returns:
+            list: 搜索关键词列表和建议
+        """
+        prompt = f"""作为一个专业的研究分析师，请帮我分析以下话题，需要从哪些方面进行信息收集？
+请列出5-8个具体的搜索关键词。每个关键词都应该针对话题的一个重要方面。
+格式要求：必须输出JSON格式，包含keywords数组字段。
+
+话题：{topic}"""
+        
+        response = self.async_chat(prompt)
+        try:
+            # 尝试从回复中提取JSON部分
+            start = response.find('{')
+            end = response.rfind('}') + 1
+            if start >= 0 and end > start:
+                json_str = response[start:end]
+                data = json.loads(json_str)
+                return data.get('keywords', [])
+            return []
+        except:
+            return []
+
+    def analyze_final_results(self, topic, analysis_results):
+        """整合分析多个搜索结果
+        
+        Args:
+            topic (str): 原始话题
+            analysis_results (list): 各个关键词的分析结果列表
+            
+        Returns:
+            str: 整合后的分析报告
+        """
+        combined_text = f"话题：{topic}\n\n各方面分析结果：\n" + "\n\n".join(analysis_results)
+        
+        prompt = """请基于以下搜集到的分析信息，对这个话题进行深入剖析和回答。
+你的分析应该：
+1. 开门见山，直接针对话题提出的问题给出分析
+2. 从多个角度解释这种现象背后的原因
+3. 评估这种做法的利弊
+4. 对未来发展趋势和可能的改进方向提出建议
+
+请记住始终围绕原话题展开分析，确保回答切中要害。
+
+话题：{topic}
+
+分析信息：
+{text}"""
+        
+        return self.async_chat(prompt.format(topic=topic, text=combined_text))
+
+    def save_analysis(self, text, analysis, output_dir="results", timestamp=None, topic_path=None):
         """保存分析结果
         
         Args:
@@ -79,6 +135,22 @@ class AIClient:
             output_dir (str): 输出目录
             timestamp (str, optional): 时间戳。如果为None则使用当前时间
         """
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            
+        if timestamp is None:
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            
+        result = {
+            "timestamp": timestamp,
+            "original_text": text,
+            "analysis": analysis
+        }
+        
+        # 如果提供了topic路径，则使用该路径
+        if topic_path:
+            output_dir = topic_path
+            
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
             
