@@ -2,10 +2,43 @@ import os
 import json
 from zhipuai import ZhipuAI
 import time
+from pathlib import Path
+from dotenv import load_dotenv
+
+def load_api_key():
+    """从环境文件加载API密钥
+    
+    优先从.env_local加载，如果不存在则从.env_online加载
+    
+    Returns:
+        str: API密钥
+    """
+    # 获取项目根目录
+    root_dir = Path(__file__).parent.parent
+    
+    # 尝试加载本地环境文件
+    local_env = root_dir / '.env_local'
+    if local_env.exists():
+        load_dotenv(local_env)
+        return os.getenv('ZHIPUAI_API_KEY')
+    
+    # 加载在线环境文件
+    online_env = root_dir / '.env_online'
+    if online_env.exists():
+        load_dotenv(online_env)
+        return os.getenv('ZHIPUAI_API_KEY')
+    
+    raise ValueError("未找到API密钥配置文件(.env_local或.env_online)")
 
 class AIClient:
-    def __init__(self, api_key="00ab92612dfb448d90e93f6578b78a3f.3Z57uuhwEkZfeLaC"):
-        """初始化AI客户端"""
+    def __init__(self, api_key=None):
+        """初始化AI客户端
+        
+        Args:
+            api_key (str, optional): API密钥。如果为None则从环境文件加载
+        """
+        if api_key is None:
+            api_key = load_api_key()
         self.client = ZhipuAI(api_key=api_key)
 
     def async_chat(self, prompt, model="glm-4-flash", max_retries=40, retry_interval=2):

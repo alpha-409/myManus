@@ -1,115 +1,97 @@
-# MyManus 搜索分析工具
+# myManus a AI-Powered Topic Analysis System
 
-一个基于Python的自动化搜索和分析工具，能够自动执行浏览器搜索并使用AI分析搜索结果。
+一个基于智谱AI的话题分析系统，支持自动搜索信息、分析整理和生成报告。
+
+## 功能特点
+
+- 多角度分析：根据输入的话题自动生成多个相关搜索关键词
+- 智能搜索：自动使用搜索引擎获取相关信息
+- AI分析：使用智谱AI对搜索结果进行分析和总结
+- 结构化存储：按话题组织存储所有搜索结果和分析报告
+- 最终报告：整合多个维度的分析结果，生成完整的话题分析报告
+
+## 安装说明
+
+1. 克隆项目
+```bash
+git clone [repository-url]
+cd myManus
+```
+
+2. 安装依赖
+```bash
+pip install -r requirements.txt
+```
+
+3. 配置环境变量
+
+项目使用两个环境文件管理API密钥：
+- `.env_local`：本地开发环境配置（不提交到git）
+- `.env_online`：线上环境配置
+
+创建`.env_local`文件（推荐）或使用`.env_online`，添加以下内容：
+```
+ZHIPUAI_API_KEY=your_api_key_here
+```
+
+## 使用方法
+
+运行主程序：
+```bash
+python search_and_analyze.py
+```
+
+程序会提示输入要分析的话题，然后：
+1. 自动生成相关搜索关键词
+2. 针对每个关键词进行搜索和分析
+3. 整合分析结果生成最终报告
+4. 将所有结果保存到话题专属目录
 
 ## 项目结构
 
 ```
 myManus/
-├── utils/                # 通用工具目录
-│   ├── __init__.py      # 包初始化文件
-│   ├── ai_client.py     # AI调用工具
-│   └── browser_search.py# 浏览器搜索工具
-├── search_and_analyze.py # 组合示例程序
-├── README.md            # 项目说明文档
-└── results/             # 结果输出目录(运行时创建)
+├── search_and_analyze.py   # 主程序
+├── utils/                  # 工具模块
+│   ├── __init__.py
+│   ├── ai_client.py       # AI分析客户端
+│   └── browser_search.py  # 浏览器搜索工具
+├── results/               # 分析结果存储
+│   └── [话题名称]/       # 每个话题的专属目录
+│       ├── task.json     # 搜索任务定义
+│       ├── search_*.json # 搜索结果
+│       ├── search_*.html # 搜索页面快照
+│       ├── analysis_*.json # 单项分析结果
+│       └── final_analysis.json # 最终分析报告
+├── .env_local            # 本地环境配置（不提交）
+└── .env_online          # 在线环境配置
 ```
 
-## 功能特点
+## 示例输出
 
-### 1. AI分析工具 (utils/ai_client.py)
-- 基于智谱AI的文本分析
-- 支持异步调用和自定义分析模板
-- 自动保存分析结果
-
-### 2. 浏览器搜索工具 (utils/browser_search.py)
-- 支持多个搜索引擎(Bing/Google/Baidu)
-- 自动获取搜索结果和HTML源码
-- 结果保存为JSON和HTML格式
-
-### 3. 组合应用 (search_and_analyze.py)
-- 自动执行搜索并获取结果
-- 调用AI分析搜索内容
-- 保存所有中间结果
-
-## 使用方法
-
-### 环境要求
-- Python 3.9+
-- 依赖包：
-  - zhipuai
-  - beautifulsoup4
-  - pywin32
-  - comtypes
-
-### 安装依赖
-```bash
-pip install zhipuai beautifulsoup4 pywin32 comtypes
+```json
+{
+  "topic": "如何看待宇树科技的机器人替代流水线工人",
+  "timestamp": "20250309_015505",
+  "analysis": {
+    "主要发现": [...],
+    "原因分析": [...],
+    "利弊评估": [...],
+    "未来趋势": [...],
+    "建议": [...]
+  }
+}
 ```
 
-### 使用示例
+## 环境依赖
 
-1. 单独使用AI分析工具:
-```bash
-python -m utils.ai_client
-```
-
-2. 单独使用浏览器搜索工具:
-```bash
-python -m utils.browser_search
-```
-
-3. 使用组合功能(搜索+分析):
-```bash
-python search_and_analyze.py
-```
-
-## 输出说明
-
-所有结果将保存在results目录下:
-
-1. 搜索结果:
-- `results/search_[engine]_[timestamp].json`: 搜索结果
-- `results/search_[engine]_[timestamp].html`: 网页源码
-
-2. 分析结果:
-- `results/analysis_[timestamp].json`: AI分析结果
-
-## 自定义配置
-
-### 1. 更改搜索引擎
-```python
-browser = BrowserSearch(search_engine="google")  # 支持 "bing"/"google"/"baidu"
-```
-
-### 2. 自定义AI分析模板
-```python
-template = """
-自定义分析模板...
-{text}
-"""
-analysis = ai.analyze_text(text, template=template)
-```
+- Python 3.8+
+- zhipuai
+- python-dotenv
+- 其他依赖见 requirements.txt
 
 ## 注意事项
 
-1. 确保有稳定的网络连接
-2. 不要中断自动化过程
-3. 需要设置正确的智谱AI API密钥
-4. 浏览器自动化过程中请勿操作浏览器
-
-## 问题排查
-
-1. 如果搜索结果获取失败:
-   - 检查网络连接
-   - 确认浏览器窗口未被最小化
-   - 增加页面加载等待时间
-
-2. 如果AI分析失败:
-   - 检查API密钥是否正确
-   - 确认网络连接状态
-   - 查看错误信息进行具体排查
-
-## License
-
-MIT License
+1. 不要提交 `.env_local` 文件到版本控制系统
+2. 首次运行前确保配置了正确的API密钥
+3. 生成的结果文件会按话题分类存储在 results 目录下
