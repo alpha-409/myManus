@@ -1,88 +1,115 @@
-# myManus - Windows 浏览器自动化工具
+# MyManus 搜索分析工具
 
-一个基于Windows API的浏览器自动化工具，可以执行搜索、获取结果并进行智能分析。
+一个基于Python的自动化搜索和分析工具，能够自动执行浏览器搜索并使用AI分析搜索结果。
+
+## 项目结构
+
+```
+myManus/
+├── utils/                # 通用工具目录
+│   ├── __init__.py      # 包初始化文件
+│   ├── ai_client.py     # AI调用工具
+│   └── browser_search.py# 浏览器搜索工具
+├── search_and_analyze.py # 组合示例程序
+├── README.md            # 项目说明文档
+└── results/             # 结果输出目录(运行时创建)
+```
 
 ## 功能特点
 
-- 🌐 自动化浏览器操作
-  - 使用Windows API控制浏览器
-  - 自动打开Bing搜索
-  - 自动获取搜索结果
-- 📑 结果采集与存储
-  - 保存搜索结果为JSON格式
-  - 保存完整HTML源码
-  - 创建时间戳文件名以便追踪
-- 🤖 智能分析（通过ZhipuAI）
-  - 分析搜索结果内容
-  - 提供主题概述
-  - 识别关键信息和趋势
+### 1. AI分析工具 (utils/ai_client.py)
+- 基于智谱AI的文本分析
+- 支持异步调用和自定义分析模板
+- 自动保存分析结果
 
-## 系统要求
+### 2. 浏览器搜索工具 (utils/browser_search.py)
+- 支持多个搜索引擎(Bing/Google/Baidu)
+- 自动获取搜索结果和HTML源码
+- 结果保存为JSON和HTML格式
 
-- Windows 操作系统
-- Python 3.6+
-- 安装的浏览器（Edge, Chrome, 或 Firefox）
-
-## 依赖库
-
-```
-pip install -r requirements.txt
-```
-
-主要依赖：
-- win32api
-- win32con
-- win32gui
-- win32com.client
-- zhipuai
-- beautifulsoup4
-
-## 配置
-
-1. 获取ZhipuAI API密钥
-2. 在`analyze_search_results.py`中设置API密钥：
-```python
-api_key = "your_api_key_here"
-```
+### 3. 组合应用 (search_and_analyze.py)
+- 自动执行搜索并获取结果
+- 调用AI分析搜索内容
+- 保存所有中间结果
 
 ## 使用方法
 
-1. 运行主程序：
+### 环境要求
+- Python 3.9+
+- 依赖包：
+  - zhipuai
+  - beautifulsoup4
+  - pywin32
+  - comtypes
+
+### 安装依赖
 ```bash
-python browser_automation.py
+pip install zhipuai beautifulsoup4 pywin32 comtypes
 ```
 
-2. 输入搜索关键词
+### 使用示例
 
-3. 程序会自动：
-   - 打开浏览器进行搜索
-   - 获取搜索结果
-   - 保存到results目录
-   - 使用ZhipuAI分析结果
+1. 单独使用AI分析工具:
+```bash
+python -m utils.ai_client
+```
 
-## 文件结构
+2. 单独使用浏览器搜索工具:
+```bash
+python -m utils.browser_search
+```
 
-- `browser_automation.py`: 主程序，处理浏览器自动化
-- `analyze_search_results.py`: 结果分析模块，集成ZhipuAI
-- `results/`: 保存搜索结果的目录
-  - `*_search_win32_*.json`: 搜索结果JSON文件
-  - `*_search_win32_*.html`: 搜索结果HTML文件
-  - `*_analysis.json`: ZhipuAI分析结果
+3. 使用组合功能(搜索+分析):
+```bash
+python search_and_analyze.py
+```
+
+## 输出说明
+
+所有结果将保存在results目录下:
+
+1. 搜索结果:
+- `results/search_[engine]_[timestamp].json`: 搜索结果
+- `results/search_[engine]_[timestamp].html`: 网页源码
+
+2. 分析结果:
+- `results/analysis_[timestamp].json`: AI分析结果
+
+## 自定义配置
+
+### 1. 更改搜索引擎
+```python
+browser = BrowserSearch(search_engine="google")  # 支持 "bing"/"google"/"baidu"
+```
+
+### 2. 自定义AI分析模板
+```python
+template = """
+自定义分析模板...
+{text}
+"""
+analysis = ai.analyze_text(text, template=template)
+```
 
 ## 注意事项
 
-1. 确保运行时浏览器没有被其他程序占用
-2. 程序运行时请勿操作鼠标和键盘
-3. 若遇到异常，请检查浏览器窗口是否正常打开
+1. 确保有稳定的网络连接
+2. 不要中断自动化过程
+3. 需要设置正确的智谱AI API密钥
+4. 浏览器自动化过程中请勿操作浏览器
 
-## 许可证
+## 问题排查
 
-本项目基于MIT许可证开源。
+1. 如果搜索结果获取失败:
+   - 检查网络连接
+   - 确认浏览器窗口未被最小化
+   - 增加页面加载等待时间
 
-## 贡献
+2. 如果AI分析失败:
+   - 检查API密钥是否正确
+   - 确认网络连接状态
+   - 查看错误信息进行具体排查
 
-欢迎提交Issue和Pull Request来完善项目。
+## License
 
-## 作者
-
-myManus团队
+MIT License
